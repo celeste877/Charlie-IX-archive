@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>奇物陈列室 · 谜典</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.0.0/swiper-bundle.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Caveat:wght@400;700&family=Noto+Serif+SC:wght@300;400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0d0b09;
+            --gold: #c59b27;
+            --gold-dim: #8b6f3a;
+            --parchment: #f4e4c1;
+            --text-dim: #8a8178;
+            --card-bg: #1e1a14;
+            --border-color: rgba(197,155,39,0.25);
+            --font-display: 'Ma Shan Zheng', cursive;
+            --font-hand: 'Caveat', cursive;
+            --font-body: 'Noto Serif SC', 'SimSun', serif;
+            --font-type: 'Special Elite', 'Courier New', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-deep);
+            color: #d3c7b1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
+        /* 背景氛围 */
+        .atmosphere {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: radial-gradient(ellipse at 50% 30%, rgba(197,155,39,0.12) 0%, transparent 70%),
+                        radial-gradient(ellipse at 20% 80%, rgba(139,111,58,0.08) 0%, transparent 65%),
+                        var(--bg-deep);
+        }
+        .particles {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><circle cx="45" cy="120" r="1.5" fill="%23c59b27" opacity="0.5"/><circle cx="210" cy="30" r="1" fill="%23c59b27" opacity="0.3"/><circle cx="330" cy="280" r="1.8" fill="%23c59b27" opacity="0.4"/><circle cx="80" cy="350" r="1.2" fill="%23c59b27" opacity="0.25"/><circle cx="280" cy="160" r="0.8" fill="%23c59b27" opacity="0.6"/><circle cx="150" cy="250" r="1.4" fill="%23c59b27" opacity="0.35"/><circle cx="370" cy="60" r="1.1" fill="%23c59b27" opacity="0.45"/></svg>');
+            animation: floatParticles 18s infinite alternate ease-in-out;
+            opacity: 0.5;
+        }
+        @keyframes floatParticles {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-30px, -20px); }
+        }
+        /* 导航栏 */
+        nav {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(13,11,9,0.85);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        nav .logo {
+            font-family: var(--font-hand);
+            font-size: 2rem;
+            color: var(--gold);
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+        nav ul li a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            transition: color 0.3s;
+        }
+        nav ul li a:hover,
+        nav ul li a.active {
+            color: var(--gold);
+            border-bottom: 1px solid var(--gold);
+        }
+        .nav-icon {
+            font-size: 1.8rem;
+            color: var(--gold);
+            animation: iconGlow 2s infinite alternate;
+            margin-left: 0.5rem;
+        }
+        @keyframes iconGlow {
+            0% { text-shadow: 0 0 8px rgba(197,155,39,0.5); }
+            100% { text-shadow: 0 0 20px rgba(197,155,39,0.9); }
+        }
+
+        /* 主体左右布局 */
+        .hero-layout {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+            padding: 3rem 5%;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        /* 左侧文案区 */
+        .left-intro {
+            flex: 1 1 380px;
+            max-width: 480px;
+            padding: 2rem;
+            border-left: 4px solid var(--gold);
+            background: rgba(13,11,9,0.5);
+            backdrop-filter: blur(5px);
+            border-radius: 0 8px 8px 0;
+            animation: fadeInLeft 1s ease;
+        }
+        .left-intro h1 {
+            font-family: var(--font-display);
+            font-size: 3.2rem;
+            color: var(--parchment);
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        .left-intro p {
+            font-size: 1.1rem;
+            line-height: 2;
+            color: var(--text-dim);
+            font-style: italic;
+        }
+        .left-intro .quote-mark {
+            font-family: var(--font-hand);
+            font-size: 3rem;
+            color: var(--gold);
+            opacity: 0.7;
+            line-height: 1;
+        }
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* 右侧展示区 */
+        .right-showcase {
+            flex: 2 1 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+        /* 搜索工具栏 */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+        }
+        .search-container {
+            flex: 1 1 250px;
+        }
+        .search-container input {
+            width: 100%;
+            padding: 0.8rem 1.5rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(197,155,39,0.4);
+            border-radius: 30px;
+            color: var(--parchment);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            transition: all 0.3s;
+            outline: none;
+            backdrop-filter: blur(5px);
+        }
+        .search-container input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(197,155,39,0.2);
+            background: rgba(255,255,255,0.1);
+        }
+        .search-container input::placeholder {
+            color: var(--text-dim);
+            font-style: italic;
+        }
+        .filter-tags {
+            display: flex;
+            gap: 0.6rem;
+        }
+        .filter-tag {
+            padding: 0.4rem 1.2rem;
+            border: 1px solid var(--gold-dim);
+            border-radius: 20px;
+            color: var(--gold-dim);
+            font-family: var(--font-hand);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: transparent;
+            letter-spacing: 0.05em;
+        }
+        .filter-tag:hover,
+        .filter-tag.active {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: var(--bg-deep);
+        }
+
+        /* 轮播盒子 */
+        .swiper-box {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(30px);
+            border-radius: 24px;
+            box-shadow: 0 0.5px 0 1px rgba(255,255,255,0.08) inset,
+                        0 1px 0 0 rgba(255,255,255,0.1) inset,
+                        0 15px 40px rgba(0,0,0,0.6);
+            padding: 30px 45px;
+            width: 100%;
+            max-width: 750px;
+        }
+        .main-swiper {
+            width: 280px;
+            height: 400px;
+            padding: 20px;
+        }
+        .main-swiper .swiper-slide {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .main-swiper .swiper-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .main-swiper .overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, #0f2027, transparent, transparent);
+        }
+        .main-swiper .overlay h2 {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            color: #fff;
+            font-weight: 400;
+            font-size: 1.3rem;
+            margin: 0 0 25px 25px;
+            font-family: var(--font-display);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .sub-swiper {
+            width: 360px;
+            min-height: 300px;
+        }
+        .subbg {
+            display: grid;
+            gap: 14px;
+            color: var(--parchment);
+        }
+        .subbg h1 {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+        .info-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            font-size: 1.15rem;
+        }
+        .tag {
+            color: #fff;
+            padding: 1px 8px;
+            font-size: 14px;
+            border-radius: 5px;
+            background: var(--gold-dim);
+            white-space: nowrap;
+        }
+        .info-value {
+            font-size: 1.3rem;
+            color: #e8e0d0;
+        }
+        .describ {
+            height: 90px;
+            overflow: auto;
+            font-size: 1.15rem;
+            color: #c5bfb0;
+            line-height: 1.7;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .describ::-webkit-scrollbar { display: none; }
+        .swiper-pagination { transform: translateY(15px); }
+        .swiper-pagination-bullet { background: var(--gold-dim); opacity: 0.5; }
+        .swiper-pagination-bullet-active { background: var(--gold); opacity: 1; }
+
+        /* 响应式：窄屏改为上下布局 */
+        @media (max-width: 900px) {
+            .hero-layout {
+                flex-direction: column;
+                padding: 2rem 1rem;
+            }
+            .left-intro {
+                text-align: center;
+                border-left: none;
+                border-bottom: 4px solid var(--gold);
+                border-radius: 0 0 8px 8px;
+                max-width: 100%;
+            }
+            .swiper-box {
+                flex-direction: column;
+                padding: 20px;
+                gap: 20px;
+            }
+            .main-swiper { width: 220px; height: 320px; }
+            .sub-swiper { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="atmosphere"></div>
+    <div class="particles"></div>
+
+    <!-- 导航栏 -->
+    <nav>
+        <div class="logo">The Enigma Codex</div>
+        <ul>
+            <li><a href="sy1.html">序厅</a></li>
+            <li><a href="档案.html">墨香纪年</a></li>
+            <li><a href="冒险者名录.html">冒险者名录</a></li>
+            <li><a href="奇物陈列室.html" class="active">奇物陈列室</a></li>
+            <li><a href="荐书巷.html">箴言壁</a></li>
+            <li><a href="馆志.html">馆志</a></li>
+            <li class="nav-icon" title="档案之眼">📜</li>
+        </ul>
+    </nav>
+
+    <!-- 左右分栏主体 -->
+    <div class="hero-layout">
+        <!-- 左侧文案 -->
+        <div class="left-intro">
+            <h1>奇物陈列室</h1>
+            <p>
+                <span class="quote-mark">“</span><br>
+                每一件道具都是谜题的碎片，<br>
+                封存着冒险队的勇气与智慧。<br>
+                从黑贝街的亡灵日记到不死国的生命树种子，<br>
+                它们静静躺在档案深处，<br>
+                等待下一位探索者唤醒沉睡的记忆。
+            </p>
+        </div>
+
+        <!-- 右侧轮播及搜索 -->
+        <div class="right-showcase">
+            <!-- 搜索与分类标签 -->
+            <div class="toolbar">
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="搜索道具名称或出处..." autocomplete="off">
+                </div>
+                <div class="filter-tags">
+                    <span class="filter-tag active" data-filter="all">全部</span>
+                    <span class="filter-tag" data-filter="前8册">前8册</span>
+                    <span class="filter-tag" data-filter="后8册">后8册</span>
+                </div>
+            </div>
+
+            <!-- 轮播展示区 -->
+            <div class="swiper-box">
+                <div class="swiper main-swiper">
+                    <div class="swiper-wrapper" id="mainSwiperWrapper"></div>
+                    <div class="swiper-pagination"></div>
+                </div>
+                <div class="swiper sub-swiper">
+                    <div class="swiper-wrapper" id="subSwiperWrapper"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Swiper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.0.0/swiper-bundle.min.js"></script>
+    <script>
+        const artifacts = [
+            { name: "亡灵日记本", book: "黑贝街的亡灵", desc: "一本扔不掉的日记，写满诡异的童谣与提示，引领DODO冒险队走进黑贝街的迷宫。", img: "亡灵日记本.png", group: "前8册" },
+            { name: "巫女面具", book: "恐怖的巫女面具", desc: "黏糊糊的古老面具，会开口说话，戴上后仿佛能实现愿望，却隐藏着危险的校园秘密。", img: "巫女面具.png", group: "前8册" },
+            { name: "古董首饰盒", book: "法老王之心", desc: "神秘少女赠送的古埃及首饰盒，打开后法老王之心失窃，诅咒随之降临。", img: "古董首饰盒.png", group: "前8册" },
+            { name: "血族戒指", book: "吸血鬼公墓", desc: "卡玛利拉家族的遗物，戒指内侧刻着数字“七”，是破解吸血鬼之谜的钥匙。", img: "血族戒指.png", group: "前8册" },
+            { name: "青铜钥匙", book: "青铜棺的葬礼", desc: "从汉庭秋月社区获得的青铜钥匙，能打开封存着清朝格格冤魂的青铜棺。", img: "青铜钥匙.png", group: "前8册" },
+            { name: "白骨指南针", book: "白骨森林", desc: "在白骨森林捡到的生锈指南针，针头永远指向黄金宝藏的方向。", img: "白骨指南针.png", group: "前8册" },
+            { name: "羽蛇神古书", book: "羽蛇神的黄金眼", desc: "墨多多爷爷寄来的玛雅预言书，记载着2012世界末日与羽蛇神后裔的传说。", img: "羽蛇神古书.png", group: "后8册" },
+            { name: "金身佛像", book: "最后的古寺神佛", desc: "太姥姥亲眼所见的幻化金佛碎片，触碰后会被同化为金铜佛像。", img: "金身佛像.png", group: "后8册" },
+            { name: "人鱼鳞片", book: "失落的海底城", desc: "闪烁着荧光的深海鳞片，拥有亚特兰蒂斯人鱼的气息，隐藏着不死族的秘密。", img: "人鱼鳞片.png", group: "后8册" },
+            { name: "金丝嫁衣", book: "鬼公主的嫁衣", desc: "一根根金丝编织的傀儡嫁衣，穿上后便会被鬼公主操控，成为地宫的守护者。", img: "金丝嫁衣.png", group: "后8册" },
+            { name: "骷髅车票", book: "幽灵列车", desc: "印着骷髅头的老旧火车票，持票者将登上通往第64区森林的亡灵列车。", img: "骷髅车票.png", group: "后8册" },
+            { name: "生命树种子", book: "不死国的生命树", desc: "一颗闪烁着蓝色微光的种子，来自尤加特拉希生命树，是破解不死之国的最终希望。", img: "生命树种子.png", group: "后8册" }
+        ];
+
+        let mainSwiper, subSwiper;
+        let currentFilter = 'all';
+
+        function generateSlides(dataList) {
+            let mainSlides = '', subSlides = '';
+            dataList.forEach(item => {
+                mainSlides += `
+                    <div class="swiper-slide">
+                        <img src="${item.img}" alt="${item.name}">
+                        <div class="overlay"><h2>${item.name}</h2></div>
+                    </div>`;
+                subSlides += `
+                    <div class="swiper-slide subbg">
+                        <h1>${item.name}</h1>
+                        <div class="info-row"><span class="tag">出处</span><span class="info-value">《${item.book}》</span></div>
+                        <div class="info-row"><span class="tag">类型</span><span class="info-value">关键道具</span></div>
+                        <div class="describ"><span>${item.desc}</span></div>
+                    </div>`;
+            });
+            document.getElementById('mainSwiperWrapper').innerHTML = mainSlides;
+            document.getElementById('subSwiperWrapper').innerHTML = subSlides;
+        }
+
+        function initSwiper() {
+            if (mainSwiper) mainSwiper.destroy(true, true);
+            if (subSwiper) subSwiper.destroy(true, true);
+            subSwiper = new Swiper(".sub-swiper", {
+                allowTouchMove: false,
+                loop: true,
+                effect: "fade",
+                fadeEffect: { crossFade: true }
+            });
+            mainSwiper = new Swiper(".main-swiper", {
+                effect: "cards",
+                grabCursor: true,
+                initialSlide: 0,
+                loop: true,
+                mousewheel: { invert: false },
+                pagination: { el: ".swiper-pagination" },
+                autoplay: { delay: 4000, disableOnInteraction: false },
+                thumbs: { swiper: subSwiper }
+            });
+        }
+
+        function filterArtifacts(query, group) {
+            let filtered = artifacts;
+            if (group && group !== 'all') {
+                filtered = filtered.filter(item => item.group === group);
+            }
+            if (query) {
+                const q = query.toLowerCase();
+                filtered = filtered.filter(item =>
+                    item.name.toLowerCase().includes(q) || item.book.toLowerCase().includes(q)
+                );
+            }
+            if (filtered.length === 0) {
+                generateSlides([{
+                    name: "未找到道具",
+                    book: "—",
+                    desc: "没有匹配的道具，请尝试其他关键词。",
+                    img: "https://via.placeholder.com/300x400/0d0b09/c59b27?text=?"
+                }]);
+            } else {
+                generateSlides(filtered);
+            }
+            initSwiper();
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('filter-tag')) {
+                document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFilter = e.target.getAttribute('data-filter');
+                const query = document.getElementById('searchInput').value;
+                filterArtifacts(query, currentFilter);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            generateSlides(artifacts);
+            initSwiper();
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                filterArtifacts(e.target.value, currentFilter);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冒险者名录 · 谜典</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Caveat:wght@400;700&family=Noto+Serif+SC:wght@300;400;700&family=Special+Elite&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-deep: #0d0b09;
+            --gold: #c59b27;
+            --gold-dim: #8b6f3a;
+            --parchment: #f4e4c1;
+            --font-display: 'Ma Shan Zheng', cursive;
+            --font-hand: 'Caveat', cursive;
+            --font-body: 'Noto Serif SC', 'SimSun', serif;
+            --font-type: 'Special Elite', 'Courier New', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-deep);
+            color: #d3c7b1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: radial-gradient(ellipse at 50% 0%, rgba(197,155,39,0.06) 0%, transparent 70%),
+                        radial-gradient(ellipse at 50% 100%, rgba(197,155,39,0.04) 0%, transparent 70%),
+                        var(--bg-deep);
+        }
+
+        /* 导航栏 */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(13,11,9,0.85);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(197,155,39,0.3);
+        }
+        nav .logo {
+            font-family: var(--font-hand);
+            font-size: 2rem;
+            color: var(--gold);
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+        nav ul li a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            transition: color 0.3s;
+        }
+        nav ul li a:hover,
+        nav ul li a.active {
+            color: var(--gold);
+            border-bottom: 1px solid var(--gold);
+        }
+        .nav-icon {
+            font-size: 1.8rem;
+            color: var(--gold);
+            animation: iconGlow 2s infinite alternate;
+            margin-left: 0.5rem;
+        }
+        @keyframes iconGlow {
+            0% { text-shadow: 0 0 8px rgba(197,155,39,0.5); }
+            100% { text-shadow: 0 0 20px rgba(197,155,39,0.9); }
+        }
+
+        /* 主体 */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 5% 4rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .page-header .eng-sub {
+            font-family: var(--font-hand);
+            font-size: 1.4rem;
+            color: var(--gold-dim);
+            letter-spacing: 0.3em;
+        }
+        .page-header h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            color: var(--parchment);
+            text-shadow: 0 0 30px rgba(197,155,39,0.3);
+        }
+
+        /* 交互网格容器 */
+        .container {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 1em;
+            width: 100%;
+            max-width: 1100px;
+            height: 480px;
+            transition: grid-template-columns 400ms;
+        }
+
+        .container:hover .box {
+            filter: brightness(0.4) opacity(0.7);
+        }
+
+        .box {
+            position: relative;
+            background: var(--img) center center;
+            background-size: cover;
+            transition: filter 400ms, transform 400ms;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(197,155,39,0.25);
+        }
+
+        .container .box:hover {
+            filter: brightness(1) opacity(1) !important;
+            border-color: var(--gold);
+            z-index: 2;
+        }
+
+        /* 链接填满整个盒子，用于点击弹出详情 */
+        .box-link {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            display: block;
+            text-decoration: none;
+        }
+
+        /* 错落效果 */
+        .box:nth-child(odd) {
+            transform: translateY(-12px);
+        }
+        .box:nth-child(even) {
+            transform: translateY(12px);
+        }
+
+        /* 名字弹出 */
+        .box::after {
+            content: attr(data-text);
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            color: #b8860b;
+            letter-spacing: 0.15em;
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: all 400ms;
+            pointer-events: none;
+            text-shadow: 0 0 10px rgba(184,134,11,0.8), 0 0 20px rgba(184,134,11,0.5);
+        }
+
+        .box:hover::after {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* 悬停列宽变化 */
+        .container:has(.box-1:hover) { grid-template-columns: 4fr 1fr 1fr 1fr 1fr 1fr 1fr; }
+        .container:has(.box-2:hover) { grid-template-columns: 1fr 4fr 1fr 1fr 1fr 1fr 1fr; }
+        .container:has(.box-3:hover) { grid-template-columns: 1fr 1fr 4fr 1fr 1fr 1fr 1fr; }
+        .container:has(.box-4:hover) { grid-template-columns: 1fr 1fr 1fr 4fr 1fr 1fr 1fr; }
+        .container:has(.box-5:hover) { grid-template-columns: 1fr 1fr 1fr 1fr 4fr 1fr 1fr; }
+        .container:has(.box-6:hover) { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 4fr 1fr; }
+        .container:has(.box-7:hover) { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 4fr; }
+
+        /* 弹窗详情（点击出现） */
+        .detail-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 11, 9, 0.88);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s;
+        }
+        .detail-overlay:target {
+            opacity: 1;
+            visibility: visible;
+        }
+        .detail-card {
+            background: rgba(26, 21, 16, 0.96);
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            padding: 2.5rem;
+            max-width: 700px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 25px rgba(197,155,39,0.15);
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            animation: fadeInPop 0.4s ease-out;
+        }
+        .detail-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            color: var(--gold-dim);
+            text-decoration: none;
+            font-weight: 300;
+            transition: color 0.3s;
+        }
+        .detail-close:hover { color: var(--gold); }
+        .detail-portrait {
+            flex: 1 1 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .detail-portrait img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--gold);
+            box-shadow: 0 0 25px rgba(197,155,39,0.3);
+        }
+        .detail-text {
+            flex: 2 1 280px;
+        }
+        .detail-text h2 {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--parchment);
+            margin-bottom: 0.5rem;
+        }
+        .detail-text .role {
+            font-family: var(--font-hand);
+            color: var(--gold-dim);
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        .detail-text .desc {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #b8ae9e;
+            font-style: italic;
+            margin-bottom: 1.2rem;
+        }
+        .traits {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1.5rem;
+        }
+        .trait-badge {
+            background: rgba(197,155,39,0.12);
+            border: 1px solid rgba(197,155,39,0.35);
+            border-radius: 2px;
+            padding: 0.3rem 1rem;
+            font-size: 0.85rem;
+            color: var(--gold);
+            font-family: var(--font-type);
+            letter-spacing: 0.05em;
+        }
+        .popularity-full {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .popularity-full .label {
+            font-family: var(--font-hand);
+            color: var(--gold-dim);
+            font-size: 1.1rem;
+            letter-spacing: 0.1em;
+        }
+        .stars-big {
+            display: flex;
+            gap: 3px;
+            font-size: 1.3rem;
+        }
+        .stars-big span {
+            color: #3a3228;
+        }
+        .stars-big span.filled {
+            color: var(--gold);
+        }
+        .score-num {
+            font-weight: 700;
+            color: var(--gold);
+            font-size: 1.2rem;
+            margin-left: 0.3rem;
+        }
+
+        @keyframes fadeInPop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .radar-container {
+            flex: 1 1 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .radar-container h3 {
+            font-family: var(--font-hand);
+            color: var(--gold-dim);
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        .radar-chart {
+            width: 220px;
+            height: 220px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 800px) {
+            .container {
+                height: 320px;
+                width: 100%;
+                gap: 0.5em;
+            }
+            .box::after {
+                font-size: 0.9rem;
+                padding: 6px 12px;
+                bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">The Enigma Codex</div>
+        <ul>
+            <li><a href="sy1.html">序厅</a></li>
+            <li><a href="档案.html">墨香纪年</a></li>
+            <li><a href="冒险者名录.html" class="active">冒险者名录</a></li>
+            <li><a href="奇物陈列室.html">奇物陈列室</a></li>
+            <li><a href="荐书巷.html">荐书巷</a></li>
+            <li><a href="馆志.html">馆志</a></li>
+            <li class="nav-icon" title="档案之眼">📜</li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="page-header">
+            <p class="eng-sub">Dossiers of the DODO Team</p>
+            <h1>冒险者名录</h1>
+        </section>
+
+        <div class="container">
+            <!-- 查理 -->
+            <div class="box box-1" style="--img:url(查理.jpg);" data-text="查理">
+                <a href="#charlie" class="box-link"></a>
+            </div>
+            <!-- 墨多多 -->
+            <div class="box box-2" style="--img:url(墨多多.jpg);" data-text="墨多多">
+                <a href="#duoduo" class="box-link"></a>
+            </div>
+            <!-- 虎鲨 -->
+            <div class="box box-3" style="--img:url(虎鲨.png);" data-text="虎鲨">
+                <a href="#husha" class="box-link"></a>
+            </div>
+            <!-- 扶幽 -->
+            <div class="box box-4" style="--img:url(扶幽.jpg);" data-text="扶幽">
+                <a href="#fuyou" class="box-link"></a>
+            </div>
+            <!-- 尧婷婷 -->
+            <div class="box box-5" style="--img:url(尧婷婷.jpg);" data-text="尧婷婷">
+                <a href="#tingting" class="box-link"></a>
+            </div>
+            <!-- 唐晓翼 -->
+            <div class="box box-6" style="--img:url(唐晓翼.png);" data-text="唐晓翼">
+                <a href="#tangxiaoyi" class="box-link"></a>
+            </div>
+            <!-- 亚瑟 -->
+            <div class="box box-7" style="--img:url(亚瑟.png);" data-text="亚瑟">
+                <a href="#arthur" class="box-link"></a>
+            </div>
+        </div>
+    </main>
+
+    <!-- 详情浮层 -->
+    <div class="detail-overlay" id="charlie">
+        <div class="detail-card">
+            <a href="#" class="detail-close">&times;</a>
+            <div class="detail-portrait"><img src="查理.jpg" alt="查理"></div>
+            <div class="detail-text">
+                <h2>查理</h2>
+                <p class="role">疯狗刑警 · 皇室血统</p>
+                <p class="desc">拥有皇室血统的绅士狗，通过高科技领结说话。毒舌刻薄却头脑冷静，是冒险队最可靠的推理决策者，总在关键时刻扭转局势。</p>
+                <div class="traits"><span class="trait-badge">毒舌</span><span class="trait-badge">高智商</span><span class="trait-badge">冷静</span><span class="trait-badge">领导力</span></div>
+                <div class="popularity-full"><span class="label">受欢迎指数</span><div class="stars-big"><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span></div><span class="score-num">9.8</span></div>
+            </div>
+            <div class="radar-container">
+                <h3>能力雷达</h3>
+                <canvas id="radar-charlie" class="radar-chart" width="220" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="detail-overlay" id="duoduo">
+        <div class="detail-card">
+            <a href="#" class="detail-close">&times;</a>
+            <div class="detail-portrait"><img src="墨多多.jpg" alt="墨多多"></div>
+            <div class="detail-text">
+                <h2>墨多多</h2>
+                <p class="role">问题多多 · 冒险队核心</p>
+                <p class="desc">原名墨小侠，因满脑子问号被称为“问题多多”。成绩不佳却充满行动力与正义感，用天马行空的想象力一次次打破僵局。</p>
+                <div class="traits"><span class="trait-badge">好奇心旺盛</span><span class="trait-badge">勇敢</span><span class="trait-badge">乐观</span><span class="trait-badge">行动派</span></div>
+                <div class="popularity-full"><span class="label">受欢迎指数</span><div class="stars-big"><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span>★</span></div><span class="score-num">8.5</span></div>
+            </div>
+            <div class="radar-container">
+                <h3>能力雷达</h3>
+                <canvas id="radar-duoduo" class="radar-chart" width="220" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="detail-overlay" id="husha">
+        <div class="detail-card">
+            <a href="#" class="detail-close">&times;</a>
+            <div class="detail-portrait"><img src="虎鲨.png" alt="虎鲨"></div>
+            <div class="detail-text">
+                <h2>虎鲨</h2>
+                <p class="role">格斗小子 · 勇气担当</p>
+                <p class="desc">本名胡沙，体格魁梧，冲动直率，是团队中最讲义气的伙伴。力大无穷，不惧任何危险，是伙伴们最坚实的后盾。</p>
+                <div class="traits"><span class="trait-badge">热血</span><span class="trait-badge">讲义气</span><span class="trait-badge">强壮</span><span class="trait-badge">冲动</span></div>
+                <div class="popularity-full"><span class="label">受欢迎指数</span><div class="stars-big"><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span>★</span><span>★</span></div><span class="score-num">7.8</span></div>
+            </div>
+            <div class="radar-container">
+                <h3>能力雷达</h3>
+                <canvas id="radar-husha" class="radar-chart" width="220" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="detail-overlay" id="fuyou">
+        <div class="detail-card">
+            <a href="#" class="detail-close">&times;</a>
+            <div class="detail-portrait"><img src="扶幽.jpg" alt="扶幽"></div>
+            <div class="detail-text">
+                <h2>扶幽</h2>
+                <p class="role">沉默天才 · 技术发明家</p>
+                <p class="desc">沉默的技术天才，说话慢吞吞却能造出各种神奇发明。性格温和细心，总是在细微之处发现破局的关键线索。</p>
+                <div class="traits"><span class="trait-badge">技术宅</span><span class="trait-badge">细心</span><span class="trait-badge">温和</span><span class="trait-badge">创造力</span></div>
+                <div class="popularity-full"><span class="label">受欢迎指数</span><div class="stars-big"><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span>★</span></div><span class="score-num">7.9</span></div>
+            </div>
+            <div class="radar-container">
+                <h3>能力雷达</h3>
+                <canvas id="radar-fuyou" class="radar-chart" width="220" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="detail-overlay" id="tingting">
+        <div class="detail-card">
+            <a href="#" class="detail-close">&times;</a>
+            <div class="detail-portrait"><img src="尧婷婷.jpg" alt="尧婷婷"></div>
+            <div class="detail-text">
+                <h2>尧婷婷</h2>
+                <p class="role">理智班长 · 团队参谋</p>
+                <p class="desc">四（2）班班长，成绩优异的理智派。虽然有点胆小，但正义感极强，每次关键时刻都会挺身而出，是团队的智慧担当。</p>
+                <div class="traits"><span class="trait-badge">理智</span><span class="trait-badge">善良</span><span class="trait-badge">学霸</span><span class="trait-badge">责任感</span></div>
+                <div class="popularity-full"><span class="label">受欢迎指数</span><div class="stars-big"><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span>★</span></div><span class="score-num">8.6</span></div>
+            </div>
+            <div class="radar-container">
+                <h3>能力雷达</h3>
+                <canvas id="radar-tingting" class="radar-chart" width="220" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="detail-overlay" id="tangxiaoyi">
+        <div class="detail-card">
+            <a href="#" class="detail-close">&times;</a>
+            <div class="detail-portrait"><img src="唐晓翼.png" alt="唐晓翼"></div>
+            <div class="detail-text">
+                <h2>唐晓翼</h2>
+                <p class="role">神秘引导者 · 白狼骑士</p>
+                <p class="desc">骑着白狼王洛基的神秘少年，外表冷酷内心温柔。背负沉重过去，实力深不可测，是引导冒险队深入谜境的关键人物。</p>
+                <div class="traits"><span class="trait-badge">神秘</span><span class="trait-badge">强大</span><span class="trait-badge">毒舌</span><span class="trait-badge">悲情</span></div>
+                <div class="popularity-full"><span class="label">受欢迎指数</span><div class="stars-big"><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span></div><span class="score-num">9.5</span></div>
+            </div>
+            <div class="radar-container">
+                <h3>能力雷达</h3>
+                <canvas id="radar-tangxiaoyi" class="radar-chart" width="220" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="detail-overlay" id="arthur">
+        <div class="detail-card">
+            <a href="#" class="detail-close">&times;</a>
+            <div class="detail-portrait"><img src="亚瑟.png" alt="亚瑟"></div>
+            <div class="detail-text">
+                <h2>亚瑟</h2>
+                <p class="role">大西洋船王 · 不死传说</p>
+                <p class="desc">拥有不死族血脉的大西洋船王，优雅深沉，知识渊博。掌握着亚特兰蒂斯的古老秘密，数次在危急时刻拯救冒险队。</p>
+                <div class="traits"><span class="trait-badge">优雅</span><span class="trait-badge">博学</span><span class="trait-badge">神秘</span><span class="trait-badge">深沉</span></div>
+                <div class="popularity-full"><span class="label">受欢迎指数</span><div class="stars-big"><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span>★</span></div><span class="score-num">9.1</span></div>
+            </div>
+            <div class="radar-container">
+                <h3>能力雷达</h3>
+                <canvas id="radar-arthur" class="radar-chart" width="220" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align:center; padding:1.5rem; background:rgba(0,0,0,0.4); color:#6b6154; border-top:1px solid rgba(197,155,39,0.2);">
+        <p>© 2025 The Enigma Codex · 冒险者档案仅供学习交流</p>
+    </footer>
+
+</body>
+<script>
+const characterStats = {
+    charlie: { intelligence: 9.5, courage: 8, strength: 6, charisma: 9, skill: 8.5, speed: 7 },
+    duoduo: { intelligence: 7, courage: 8.5, strength: 6.5, charisma: 7.5, skill: 6, speed: 7.5 },
+    husha: { intelligence: 5.5, courage: 9.5, strength: 9.5, charisma: 8, skill: 5, speed: 6 },
+    fuyou: { intelligence: 9, courage: 5, strength: 4, charisma: 6, skill: 10, speed: 4 },
+    tingting: { intelligence: 9, courage: 6.5, strength: 4, charisma: 8.5, skill: 7, speed: 5.5 },
+    tangxiaoyi: { intelligence: 9, courage: 10, strength: 8.5, charisma: 7.5, skill: 9.5, speed: 9 },
+    arthur: { intelligence: 9.5, courage: 8.5, strength: 7, charisma: 9.5, skill: 8, speed: 6.5 }
+};
+
+const labels = ['智力', '勇气', '体力', '魅力', '技能', '速度'];
+const maxValue = 10;
+
+function drawRadarChart(canvasId, stats) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const centerX = 110;
+    const centerY = 110;
+    const radius = 75;
+    const angleStep = (Math.PI * 2) / 6;
+
+    ctx.clearRect(0, 0, 220, 220);
+
+    ctx.strokeStyle = 'rgba(197,155,39,0.4)';
+    ctx.lineWidth = 1;
+    for (let level = 1; level <= 5; level++) {
+        const r = (radius * level) / 5;
+        ctx.beginPath();
+        for (let i = 0; i <= 6; i++) {
+            const angle = i * angleStep - Math.PI / 2;
+            const x = centerX + r * Math.cos(angle);
+            const y = centerY + r * Math.sin(angle);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    ctx.strokeStyle = 'rgba(197,155,39,0.5)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 6; i++) {
+        const angle = i * angleStep - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
+        ctx.stroke();
+    }
+
+    ctx.font = 'bold 14px "Noto Serif SC", serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < 6; i++) {
+        const angle = i * angleStep - Math.PI / 2;
+        const labelRadius = radius + 22;
+        const x = centerX + labelRadius * Math.cos(angle);
+        const y = centerY + labelRadius * Math.sin(angle);
+        ctx.fillText(labels[i], x, y);
+    }
+
+    ctx.beginPath();
+    ctx.strokeStyle = '#c59b27';
+    ctx.lineWidth = 2.5;
+    for (let i = 0; i < 6; i++) {
+        const value = stats[Object.keys(stats)[i]];
+        const r = (value / maxValue) * radius;
+        const angle = i * angleStep - Math.PI / 2;
+        const x = centerX + r * Math.cos(angle);
+        const y = centerY + r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(197,155,39,0.3)';
+    ctx.fill();
+
+    for (let i = 0; i < 6; i++) {
+        const value = stats[Object.keys(stats)[i]];
+        const r = (value / maxValue) * radius;
+        const angle = i * angleStep - Math.PI / 2;
+        const x = centerX + r * Math.cos(angle);
+        const y = centerY + r * Math.sin(angle);
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#c59b27';
+        ctx.fill();
+    }
+}
+
+function initRadarCharts() {
+    Object.keys(characterStats).forEach(id => {
+        drawRadarChart('radar-' + id, characterStats[id]);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initRadarCharts);
+</script>
+</html>
